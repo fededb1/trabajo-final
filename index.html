@@ -1,0 +1,101 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+ 	<title>convoluciones</title>
+ </head>
+ <body>
+    <canvas id="canvas"></canvas>
+    <canvas id="resultado"></canvas>
+    <script type="text/javascript">
+
+    var image = new Image();
+     image.onload = imageLoaded;
+     image.src = "botella.jpg"
+     function imageLoaded() {
+ var canvas = document.getElementById("canvas");
+ var ctx = canvas.getContext("2d");
+
+    canvas.width = image.width;
+    canvas.height = image.height;
+    ctx.drawImage(image, 0, 0, image.width, image.height);
+    BlancoYNegro(canvas);
+    var resultado = document.getElementById("resultado");
+    convolucionar(canvas, resultado);
+ }
+    function BlancoYNegro(canvas) {
+    	var ctx = canvas.getContext("2d");
+    	var imagData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var pixeles = imagData.data;
+   
+      console.log(imagData);
+    for (var p=0; p < pixeles.length; p +=4) {
+      var rojo = pixeles[p];
+      var verde = pixeles[p+1];
+      var azul = pixeles[p+2];
+      var alpha = pixeles[p+3];
+      var gris = (rojo + verde + azul) /3;
+
+       pixeles[p] = gris;
+       pixeles[p+1] = gris;
+       pixeles[p+2] = gris;
+      //rojo = 50 verde=1200 azul=230
+      // gris igual a la suma dividido en 3 = 133 en todos los pixeles
+    }
+    ctx.putImageData(imagData, 0, 0);
+     }
+     function convolucionar(canvasFuente, canvasDestino){
+
+      var ctxFuente = canvasFuente.getContext("2d");
+      var imgDataFunete = ctxFuente.getImageData(0, 0, canvasFuente.width, canvasFuente.height);
+      var pixelesFuente = imgDataFunete.data;
+
+      canvasDestino.width = canvasFuente.width;
+      canvasDestino.height = canvasFuente.height;
+
+      var ctxDestino = canvasDestino.getContext("2d");
+      var imgDataDestino = ctxDestino.getImageData(0, 0, canvasDestino.width, canvasDestino.height);
+      var pixelesDestino = imgDataDestino.data;
+
+
+      // Nucleo, Kernel
+      var kernel = [
+[-1,-1,-1],
+[-1, 8,-1],
+[-1,-1,-1],
+      ];
+      for (var y=0; y < canvasFuente.height; y++) {
+        for (var x=0; x < canvasFuente.width; x++) {
+         // pasicion en el arreglo javascript
+         var idx = ((y * canvasFuente.width) + x) * 4;
+ 
+
+     //casilla
+var casilla1 = kernel [0][0] * pixelesFuente[((((y-1)*canvasFuente.width)+(x-1))*4)];
+var casilla2 = kernel [0][1] * pixelesFuente[((((y-1)*canvasFuente.width)+(x))*4)];
+var casilla3 = kernel [0][2] * pixelesFuente[((((y-1)*canvasFuente.width)+(x+1))*4)];
+var casilla4 = kernel [1][0] * pixelesFuente[((((y)*canvasFuente.width)+(x-1))*4)];
+var casilla5 = kernel [1][1] * pixelesFuente[((((y)*canvasFuente.width)+(x))*4)];
+var casilla6 = kernel [1][2] * pixelesFuente[((((y)*canvasFuente.width)+(x+1))*4)];
+var casilla7 = kernel [2][0] * pixelesFuente[((((y+1)*canvasFuente.width)+(x-1))*4)];
+var casilla8 = kernel [2][1] * pixelesFuente[((((y+1)*canvasFuente.width)+(x))*4)];
+var casilla9 = kernel [2][2] * pixelesFuente[((((y+1)*canvasFuente.width)+(x+1))*4)];
+
+resultado = casilla1 + casilla2 + casilla3 + casilla4 + casilla5 + casilla6 + casilla7 + casilla8 + casilla9;
+         pixelesDestino[idx] = resultado;//rojo
+         pixelesDestino[idx+1] = resultado; //verde  
+         pixelesDestino[idx+2] = resultado; //azul 
+         pixelesDestino[idx+3] = 255; // alpha
+        
+
+         /*pixelesDestino[idx] = pixelesFuente[idx];//rojo
+         pixelesDestino[idx+1] = pixelesFuente[idx+1];//verde)
+         pixelesDestino[idx+2] = pixelesFuente[idx+2];//azul
+         pixelesDestino[idx+3] = pixelesFuente[idx+3];//alpha*/
+        }
+      }
+      ctxDestino.putImageData(imgDataDestino, 0, 0);
+     }
+
+</script>
+ </body>
+ </html>
